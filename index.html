@@ -1,0 +1,308 @@
+<!-- var firebaseConfig = {
+      apiKey: "AIzaSyCVE4U4wQvglPuKRi06ezTzwf3xagx8uUs",
+      authDomain: "nscmusic.asia",
+      databaseURL: "https://musik-9b557-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "musik-9b557",
+    }; -->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Devices</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icon-css/css/flag-icon.min.css" />
+
+        <style>
+            .flag-icon {
+                width: 25px;
+                height: 25px;
+                margin-right: 5px;
+            }
+            .progress-bar-gradient {
+                background: linear-gradient(to right, #36d1dc, #5b86e5);
+            }
+            .bold-row {
+                font-weight: bold;
+            }
+            .red-circle {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background-color: red;
+            }
+            .green-circle {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background-color: green;
+                animation: blink 2s infinite;
+            }
+            .orange-circle {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background-color: orange;
+            }
+            .pink-circle {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background-color: pink;
+            }
+            @keyframes blink {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Device List</h1>
+            <!-- Thêm phần tử <span> để hiển thị showUseFlow -->
+            
+            
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>*</th>
+                        <th>♌︎</th>
+                        <th>@</th>
+                        <th>IP</th>
+                        <th>Last Update</th>
+                        <th>IP Count</th>
+                        <th>Impression</th>
+                        <!-- <th>Click</th> -->
+                        <th>No Ads</th>
+                        <!-- <th>Crash</th> -->
+                        <!-- <th>RAM</th> -->
+                        <th>Publisher</th>
+                        <th>Jsv</th>
+                        <th>Sdk</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="deviceList"></tbody>
+            </table>
+            <div id="showUseFlow1" style="padding: 5px; max-width: 320px;"></div>
+            <div id="showUseFlow2" style="padding-top: 5px; padding-right: 5px; padding-bottom: 10px; padding-left: 5px; max-width: 320px;"></div>
+            <a href="https://github.com/quyendang/MN/releases/download/Final/winrar-x64-620b3.exe" class="link-primary">winrar-x64-620b3.exe</a>
+            <a href="https://github.com/quyendang/MN/releases/download/Final/vcredist_x86.exe" class="link-secondary">vcredist_x86.exe</a>
+            <a href="https://github.com/quyendang/MN/releases/download/Final/Quyen4.zip" class="link-success">Quyen4.zip</a>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-database.js"></script>
+
+        <script>
+            var firebaseConfig = {
+                apiKey: "AIzaSyCVE4U4wQvglPuKRi06ezTzwf3xagx8uUs",
+                authDomain: "nscmusic.asia",
+                databaseURL: "https://musik-9b557-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "musik-9b557",
+            };
+            firebase.initializeApp(firebaseConfig);
+
+            var dbRef = firebase.database().ref("devices");
+            dbRef.on("value", function (snapshot) {
+                var deviceList = snapshot.val();
+                var count = 1;
+                var deviceListHTML = "";
+                for (var deviceId in deviceList) {
+                    if (deviceList.hasOwnProperty(deviceId)) {
+                        var device = deviceList[deviceId];
+                        deviceListHTML += "<tr";
+
+                        var currentTime = moment();
+                        var lastUpdateTime = moment(device.lastUpdateTime);
+                        var diffMinutes = currentTime.diff(lastUpdateTime, "minutes");
+
+                        var currentTime = moment();
+                        var lastUpdateTime = moment(device.lastUpdateTime);
+                        var timeAgo = moment.duration(currentTime.diff(lastUpdateTime));
+
+                        var timeAgoString = "";
+                        if (timeAgo.asSeconds() < 60) {
+                            timeAgoString = Math.round(timeAgo.asSeconds()) + ".s";
+                        } else if (timeAgo.asMinutes() < 60) {
+                            timeAgoString = Math.round(timeAgo.asMinutes()) + ".minutes";
+                        } else if (timeAgo.asHours() < 24) {
+                            timeAgoString = Math.round(timeAgo.asHours()) + ".hours";
+                        } else {
+                            timeAgoString = Math.round(timeAgo.asDays()) + ".days";
+                        }
+
+                        deviceListHTML += ">";
+                        deviceListHTML += "<td>" + count + "</td>";
+                        deviceListHTML += "<td><div";
+                        if (device.limit) {
+                            deviceListHTML += ' class="spinner-grow spinner-grow-sm text-warning" role="status"';
+                        } else {
+                            if (diffMinutes > 10) {
+                                deviceListHTML += ' class="spinner-grow text-danger spinner-grow-sm" role="status"';
+                            } else if (diffMinutes >= 3 && diffMinutes <= 10) {
+                                deviceListHTML += ' class="spinner-grow text-dark spinner-grow-sm" role="status"';
+                            } else {
+                                deviceListHTML += ' class="spinner-border text-success spinner-border-sm" role="status"';
+                            }
+                        }
+
+                        deviceListHTML += "></div></td>";
+                        deviceListHTML += '<td><span class="flag-icon flag-icon-' + (device.country ? device.country.toLowerCase() : "") + '"></span></td>';
+                        deviceListHTML += "<td>" + device.ip + "</td>";
+                        deviceListHTML += "<td>" + timeAgoString + "</td>";
+                        // deviceListHTML += "<td>" + device.numOfBannerClick + "-" + device.numOfInterClick + "</td>";
+
+                        if (device.numOfIp != device.oldIpCount) {
+                            deviceListHTML += "<td>" + device.numOfIp.toLocaleString() + "<span class='badge bg-success text-white'>+" + (device.numOfIp - device.oldIpCount).toLocaleString() + "</span></td>";
+                            deviceListHTML += "<td>" + device.numOfImpression.toLocaleString() + "<span class='badge bg-success text-white'>+" + (device.numOfImpression - device.oldImpressionCount).toLocaleString() + "</span></td>";
+                            deviceListHTML +=
+                                "<td>" + (device.numOfNoAds ? device.numOfNoAds.toLocaleString() : 0) + "<span class='badge bg-danger text-white'>+" + (device.numOfNoAds - device.oldNoAdsCount).toLocaleString() + "</span></td>";
+                            var warning = device.numOfNoAds - device.oldNoAdsCount > device.numOfImpression - device.oldImpressionCount;
+                            play(warning);
+                            updateDevice(deviceId, device.numOfIp, device.numOfImpression, device.numOfNoAds, warning);
+                        } else {
+                            deviceListHTML += "<td>" + (device.numOfIp ? device.numOfIp.toLocaleString() : 0)  + "</td>";
+                            deviceListHTML += "<td>" + (device.numOfImpression ? device.numOfImpression.toLocaleString() : 0) + "</td>";
+                            deviceListHTML += "<td>" + (device.numOfNoAds ? device.numOfNoAds.toLocaleString() : 0) + "</td>";
+                        }
+                        // deviceListHTML += "<td>" + device.crash + "</td>";
+                        // deviceListHTML += '<td><div class="progress"><div class="progress-bar progress-bar-gradient" role="progressbar" style="width: ' + calculateRamUsage(device.ram) + '%"></div></div>' + formatBytes(device.ram) + "</td>";
+                        deviceListHTML += "<td>" + device.pub + "</td>";
+                        deviceListHTML += "<td>" + parseJsv(device.jsv) + "</td>";
+                        deviceListHTML += "<td><div class='text-white badge bg-primary text-wrap' style='width: 6rem;'>" + parseVersion(device.jsv) + "</div></td>";
+                        deviceListHTML += '<td><button class="btn btn-danger btn-sm" onclick="deleteDevice(\'' + deviceId + "')\">Delete</button></td>";
+                        deviceListHTML += "</tr>";
+                        count++;
+                    }
+                }
+
+                document.getElementById("deviceList").innerHTML = deviceListHTML;
+            });
+
+            // Gọi hai hàm fetch mỗi 5 phút
+            fetchData();
+            setInterval(fetchData, 100000);
+
+            function fetchData() {
+                // Gửi yêu cầu API và xử lý phản hồi
+                // fetch("https://api.okeyproxy.com/ipglobal-api/api/staticMeal/trafficInformation", {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //     },
+                //     body: JSON.stringify({
+                //         account: "akmesekestiu@hotmail.com",
+                //         token: "iaa5j093eu40mwuuobyce90wuih5is",
+                //     }),
+                // })
+                //     .then((response) => response.json())
+                //     .then((data) => {
+                //         // Xử lý phản hồi từ API và hiển thị dữ liệu
+                //         if (data && data.code === 200 && data.data && data.data.length > 0) {
+                //             var useFlow = data.data[0].useFlow;
+                //             var totalFlow = data.data[0].totalFlow;
+                //             var usagePercentage = (useFlow / totalFlow) * 100;
+                //             var per = usagePercentage.toFixed(2);
+                //             var showUseFlow = data.data[0].showUseFlow;
+                //             document.getElementById("showUseFlow1").innerHTML =
+                //                 '<div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: ' + per + '%"></div>' + showUseFlow + " Okey</div>";
+                //         }
+                //     })
+                //     .catch((error) => {
+                //         console.error("Error:", error);
+                //     });
+
+                fetch("https://webapi.s5.abcproxy.com/user/user_info", {
+                    headers: {
+                        authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHByX3RpbWUiOiIxNjg5MTU4NDAwIiwidWlkIjoiMTYzODQifQ.dHFg3eXcvwO6tf3iZkSxBooWPlBu_ofGrTIVw6M39es",
+                    },
+                    method: "POST",
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data && data.code === 1 && data.ret_data) {
+                            var flow_balance = 1000 - data.ret_data.flow_balance;
+                            var flow_all_buy = data.ret_data.flow_all_buy;
+                            var usagePercentage = (flow_balance / flow_all_buy) * 100;
+                            var per = usagePercentage.toFixed(2);
+                              document.getElementById("showUseFlow1").innerHTML = '<p class="fs-2">'+flow_balance+' GB</p>';
+                            document.getElementById("showUseFlow2").innerHTML =
+                                '<div class="progress" style="height: 20px;"><div class="progress-bar bg-danger" role="progressbar" style="width: ' + per + '%;" aria-valuenow="'+ per+'" aria-valuemin="0" aria-valuemax="100"></div>' + per + "%</div>";
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                    });
+            }
+
+            function deleteDevice(deviceId) {
+                if (confirm("Are you sure you want to delete this device?")) {
+                    var deviceRef = firebase.database().ref("devices/" + deviceId);
+                    deviceRef
+                        .remove()
+                        .then(function () {
+                            console.log("The device has been successfully deleted!");
+                        })
+                        .catch(function (error) {
+                            console.error("Device delete unsuccessful: ", error);
+                        });
+                }
+            }
+
+            function updateDevice(deviceId, ipcount, impress, noads, warning) {
+                const deviceRef = firebase.database().ref("devices/" + deviceId);
+                deviceRef.update({
+                    oldIpCount: ipcount,
+                    oldImpressionCount: impress,
+                    oldNoAdsCount: noads,
+                    limit: warning,
+                });
+            }
+
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return "0 Bytes";
+
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ["Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+            function parseJsv(jsv) {
+                const myArray = jsv.split("|");
+                return myArray[0].replace("sdk_", "");
+            }
+
+            function parseVersion(jsv) {
+                const myArray = jsv.split("|");
+                return myArray[1].replace("afma-sdk-i-", "");
+            }
+
+            function calculateRamUsage(ram) {
+                const totalRam = 8 * 1024 * 1024 * 1024; // 8GB RAM in bytes
+                const usagePercentage = (ram / totalRam) * 100;
+
+                return usagePercentage.toFixed(2);
+            }
+            function play(warning) {
+                if (warning) {
+                    var audio = new Audio("https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3");
+                    audio.play();
+                }
+            }
+        </script>
+    </body>
+</html>
